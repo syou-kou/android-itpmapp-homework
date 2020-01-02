@@ -1,45 +1,28 @@
 package com.example.android_itpmapp_homework.activities;
 
-import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.icu.text.CaseMap;
 import android.os.Bundle;
 
 import com.example.android_itpmapp_homework.R;
-import com.example.android_itpmapp_homework.database.ITPMDataOpenHelper;
-import com.example.android_itpmapp_homework.pojo.TitleDataItem;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import org.w3c.dom.Text;
-import org.w3c.dom.TypeInfo;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ListView mListView;
-    private MainListAdapter mAdapter;
+    private ListView listView;
+    private ArrayAdapter<String> arrayAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,27 +31,9 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.mainToolbar);
         setSupportActionBar(toolbar);
 
-        mListView = findViewById(R.id.mainList);
-        mAdapter = new MainListAdapter(this, R.layout.layout_title_item, new ArrayList<TitleDataItem>());
-        mListView.setAdapter(mAdapter);
-
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                TitleDataItem item = (TitleDataItem)adapterView.getItemAtPosition(position);
-                Intent intent = EditActivity.createIntent(MainActivity.this, item.getTitle());
-                startActivity(intent);
-            }
-        });
-
-        mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long id) {
-                TitleDataItem item = (TitleDataItem)adapterView.getItemAtPosition(position);
-                Toast.makeText(MainActivity.this, item.getTitle() + "を削除しました", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-        });
+        listView = findViewById(R.id.mainList);
+        arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<String>());
+        listView.setAdapter(arrayAdapter);
 
         FloatingActionButton insertBtn = findViewById(R.id.insertBtn);
         insertBtn.setOnClickListener(new View.OnClickListener() {
@@ -78,12 +43,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        displayDataList();
     }
 
     @Override
@@ -106,74 +65,5 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    private void displayDataList() {
-        mAdapter.clear();
-        List<TitleDataItem> titleDataItems = new ArrayList<>();
-        SQLiteDatabase itpmDb = new ITPMDataOpenHelper(this).getWritableDatabase();
-        Cursor itpmDbCursor = itpmDb.query(
-                ITPMDataOpenHelper.TABLE_NAME,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
-        );
-
-        while (itpmDbCursor.moveToNext()) {
-            int id = itpmDbCursor.getInt(itpmDbCursor.getColumnIndex(ITPMDataOpenHelper._ID));
-            String title = itpmDbCursor.getString(itpmDbCursor.getColumnIndex(ITPMDataOpenHelper.COLUMN_TITLE));
-            titleDataItems.add(new TitleDataItem(id, title));
-        }
-
-        itpmDbCursor.close();
-        itpmDb.close();
-
-        mAdapter.addAll(titleDataItems);
-        mAdapter.notifyDataSetChanged();
-    }
-
-    private class MainListAdapter extends ArrayAdapter<TitleDataItem> {
-        private LayoutInflater layoutInflater;
-        private int resource;
-        private List<TitleDataItem> titleDataItems;
-
-        public MainListAdapter(@NonNull Context context, int resource, @NonNull List<TitleDataItem> objects) {
-            super(context, resource, objects);
-            this.layoutInflater = LayoutInflater.from(context);
-            this.resource = resource;
-            this.titleDataItems = objects;
-        }
-
-        @Override
-        public int getCount() {
-            return titleDataItems.size();
-        }
-
-        @Nullable
-        @Override
-        public TitleDataItem getItem(int position) {
-            return titleDataItems.get(position);
-        }
-
-        @NonNull
-        @Override
-        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-            TitleDataItem item = titleDataItems.get(position);
-            TextView titleTextView;
-
-            if (convertView == null) {
-                convertView = layoutInflater.inflate(resource, null);
-                titleTextView = convertView.findViewById(R.id.titleTextView);
-                convertView.setTag(titleTextView);
-            } else {
-                titleTextView = (TextView)convertView.getTag();
-            }
-            titleTextView.setText(item.getTitle());
-
-            return convertView;
-        }
     }
 }
