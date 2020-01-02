@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">android-itpmapp-homework</string>
+    <string name="action_settings">Settings</string>
 </resources>
