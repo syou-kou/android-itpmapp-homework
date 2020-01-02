@@ -1,5 +1,6 @@
 package com.example.android_itpmapp_homework.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.example.android_itpmapp_homework.R;
@@ -22,12 +23,12 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.mainToolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton insertBtn = findViewById(R.id.insertBtn);
+        insertBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Intent intent = new Intent(MainActivity.this, EditActivity.class);
+                startActivity(intent);
             }
         });
     }
