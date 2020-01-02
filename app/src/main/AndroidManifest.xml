@@ -20,7 +20,7 @@
 
         <activity
             android:name=".activities.MainActivity"
-            android:label="@string/app_name"
+            android:label="@string/company_title"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
 
