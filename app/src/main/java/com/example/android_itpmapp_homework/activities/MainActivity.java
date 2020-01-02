@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.icu.text.CaseMap;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import com.example.android_itpmapp_homework.R;
@@ -72,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
                         null
                 );
                 itpmDb.close();
-                displayDataList();
+                new AllDataLoadTask().execute();
                 Toast.makeText(MainActivity.this, item.getTitle() + "を削除しました", Toast.LENGTH_SHORT).show();
                 return true;
             }
@@ -91,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        displayDataList();
+        new AllDataLoadTask().execute();
     }
 
     @Override
@@ -116,29 +117,8 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void displayDataList() {
+    private void displayDataList(List<TitleDataItem> titleDataItems) {
         mAdapter.clear();
-        List<TitleDataItem> titleDataItems = new ArrayList<>();
-        SQLiteDatabase itpmDb = new ITPMDataOpenHelper(this).getWritableDatabase();
-        Cursor itpmDbCursor = itpmDb.query(
-                ITPMDataOpenHelper.TABLE_NAME,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
-        );
-
-        while (itpmDbCursor.moveToNext()) {
-            int id = itpmDbCursor.getInt(itpmDbCursor.getColumnIndex(ITPMDataOpenHelper._ID));
-            String title = itpmDbCursor.getString(itpmDbCursor.getColumnIndex(ITPMDataOpenHelper.COLUMN_TITLE));
-            titleDataItems.add(new TitleDataItem(id, title));
-        }
-
-        itpmDbCursor.close();
-        itpmDb.close();
-
         mAdapter.addAll(titleDataItems);
         mAdapter.notifyDataSetChanged();
     }
@@ -182,6 +162,38 @@ public class MainActivity extends AppCompatActivity {
             titleTextView.setText(item.getTitle());
 
             return convertView;
+        }
+    }
+
+    private class AllDataLoadTask extends AsyncTask<Void, Void, List<TitleDataItem>> {
+
+        @Override
+        protected List<TitleDataItem> doInBackground(Void... voids) {
+            List<TitleDataItem> titleDataItems = new ArrayList<>();
+            SQLiteDatabase itpmDb = new ITPMDataOpenHelper(MainActivity.this).getWritableDatabase();
+            Cursor itpmDbCursor = itpmDb.query(
+                    ITPMDataOpenHelper.TABLE_NAME,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+            );
+
+            while (itpmDbCursor.moveToNext()) {
+                int id = itpmDbCursor.getInt(itpmDbCursor.getColumnIndex(ITPMDataOpenHelper._ID));
+                String title = itpmDbCursor.getString(itpmDbCursor.getColumnIndex(ITPMDataOpenHelper.COLUMN_TITLE));
+                titleDataItems.add(new TitleDataItem(id, title));
+            }
+            itpmDbCursor.close();
+            itpmDb.close();
+            return titleDataItems;
+        }
+
+        @Override
+        protected void onPostExecute(List<TitleDataItem> titleDataItems) {
+            displayDataList(titleDataItems);
         }
     }
 }
